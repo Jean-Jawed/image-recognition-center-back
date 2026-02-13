@@ -1,0 +1,41 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+.venv/
+venv/
+env/
+ENV/
+
+# Distribution
+dist/
+build/
+*.egg-info/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Environment
+.env
+.env.local
+
+# Logs
+*.log
+pip-log.txt
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Models (downloaded at runtime)
+*.pt
+*.onnx
+
+# Temporary
+tmp/
+temp/

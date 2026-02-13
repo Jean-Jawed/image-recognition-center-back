@@ -1,0 +1,23 @@
+# Image Recognition Center — Backend Dependencies
+
+# Web framework
+fastapi==0.109.2
+uvicorn[standard]==0.27.1
+websockets==12.0
+
+# Computer vision
+opencv-python-headless==4.9.0.80
+numpy==1.26.4
+
+# MediaPipe (hands, pose, face mesh)
+mediapipe==0.10.9
+
+# Emotion detection
+fer==22.5.1
+tensorflow==2.15.0
+
+# Object detection
+ultralytics==8.1.9
+
+# Utilities
+python-multipart==0.0.9
