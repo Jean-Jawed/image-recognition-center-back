@@ -1,15 +1,11 @@
 """
 Emotion Detection Processor
-Detects facial emotions using FER (Facial Emotion Recognition)
+Detects facial emotions using DeepFace
 """
 
 import cv2
 import numpy as np
-from fer import FER
-
-# Initialize emotion detector
-# Using MTCNN for better face detection
-detector = FER(mtcnn=True)
+from deepface import DeepFace
 
 # Emotion colors (industrial palette)
 EMOTION_COLORS = {
@@ -33,20 +29,42 @@ def process(frame: np.ndarray) -> np.ndarray:
     Returns:
         Processed frame with emotion annotations
     """
-    # Detect emotions
-    results = detector.detect_emotions(frame)
+    try:
+        # Detect emotions using DeepFace
+        # enforce_detection=False prevents errors when no face is found
+        # detector_backend="opencv" is fastest
+        results = DeepFace.analyze(
+            frame,
+            actions=['emotion'],
+            enforce_detection=False,
+            detector_backend='opencv',
+            silent=True
+        )
+        
+        # Ensure results is a list
+        if not isinstance(results, list):
+            results = [results]
+        
+    except Exception:
+        # No face detected or error
+        results = []
     
     for result in results:
-        # Get bounding box
-        box = result["box"]
-        x, y, w, h = box
+        # Get bounding box (region)
+        region = result.get("region", {})
+        x = region.get("x", 0)
+        y = region.get("y", 0)
+        w = region.get("w", 0)
+        h = region.get("h", 0)
         
-        # Get emotions
-        emotions = result["emotions"]
+        # Skip if no valid region
+        if w == 0 or h == 0:
+            continue
         
-        # Find dominant emotion
-        dominant_emotion = max(emotions, key=emotions.get)
-        confidence = emotions[dominant_emotion]
+        # Get emotions dict and dominant emotion
+        emotions = result.get("emotion", {})
+        dominant_emotion = result.get("dominant_emotion", "neutral")
+        confidence = emotions.get(dominant_emotion, 0) / 100  # DeepFace returns 0-100
         
         # Get color for dominant emotion
         color = EMOTION_COLORS.get(dominant_emotion, (128, 128, 128))
@@ -69,6 +87,9 @@ def process(frame: np.ndarray) -> np.ndarray:
         bar_height = 12
         
         for i, (emotion, score) in enumerate(sorted(emotions.items())):
+            # Normalize score (DeepFace returns 0-100)
+            score_normalized = score / 100
+            
             # Background bar
             cv2.rectangle(
                 frame,
@@ -79,7 +100,7 @@ def process(frame: np.ndarray) -> np.ndarray:
             )
             
             # Score bar
-            score_width = int(bar_width * score)
+            score_width = int(bar_width * score_normalized)
             bar_color = EMOTION_COLORS.get(emotion, (128, 128, 128))
             cv2.rectangle(
                 frame,
@@ -101,7 +122,8 @@ def process(frame: np.ndarray) -> np.ndarray:
             )
     
     # Add detection count overlay
-    text = f"EMOTION: {len(results)} face(s) detected"
+    face_count = len([r for r in results if r.get("region", {}).get("w", 0) > 0])
+    text = f"EMOTION: {face_count} face(s) detected"
     cv2.rectangle(frame, (10, 10), (280, 40), (0, 0, 0), -1)
     cv2.putText(frame, text, (15, 30), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 200, 200), 2)
     
