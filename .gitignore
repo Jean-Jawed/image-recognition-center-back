@@ -40,3 +40,6 @@ models/*.task
 # Temporary
 tmp/
 temp/
+
+# Documentation
+docs/

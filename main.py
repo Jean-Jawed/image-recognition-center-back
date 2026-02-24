@@ -15,19 +15,17 @@ import numpy as np
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
 
-from processors import hand_tracking, pose_detection, face_mesh, emotion_detection, object_detection
+from processors import hand_tracking, pose_detection, face_mesh
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-# Processor registry — add new processors here
+# Processor registry (Lite Version — MediaPipe only)
 PROCESSORS: dict[str, Callable] = {
     "hand_tracking": hand_tracking.process,
     "pose_detection": pose_detection.process,
     "face_mesh": face_mesh.process,
-    "emotion_detection": emotion_detection.process,
-    "object_detection": object_detection.process,
 }
 
 
